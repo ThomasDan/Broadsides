@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Broadsides
 {
-    class Program
+    class ship
     {
-        public static bool[,]
-        static void Main(string[] args)
-        {
-
-        }
+        private bool isShip;
+        private string type;
+        private int length;
     }
 }
