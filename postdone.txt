@@ -1,0 +1,21 @@
+Broadsides post-completion ideas:
+
+1. "Smart" Shooting AI.
+-Stop shooting random if it makes a hit, until it has sunk
+	the ship.
+
+2. Arrow-navigatable board when placing shots and boats.
+
+3. Sac Bonus task:
+	Allow other parts of the code to subscribe to
+	an "OnSinking" event that is thrown by the ship.
+Example 1 & 2:
+https://docs.microsoft.com/en-us/dotnet/standard/events/how-to-raise-and-consume-events
+
+
+
+
+
+
+
+

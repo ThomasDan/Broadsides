@@ -29,10 +29,9 @@ namespace Broadsides
             set 
             { 
                 this.hits = value;
-                Console.WriteLine("For Testing Purposes, I tell you that I, " + this.type + ", have been shot " + this.hits + " out of " + this.length + " times.");
                 if(this.hits == length)
                 {
-                    Console.WriteLine("For Testing Purposes, I tell you that I, " + this.type + ", have been sunk. :(");
+                    Console.WriteLine("Damn! You've sunk my " + this.type + "! :(");
                     this.sunk = true;
                 }
             }

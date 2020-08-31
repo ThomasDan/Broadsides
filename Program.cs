@@ -93,10 +93,10 @@ namespace Broadsides
                 {
 
                     // Acquiring coordinates. X = Horizontal, Y = Vertical
-                    Console.WriteLine("\nPlease choose a valid Horizontal position:");
+                    Console.WriteLine("\nHorizontal start position:");
                     int x = AcquireValidIntegerWithin(0, 9 - (horizontal ? Ship.Length-1 : 0));
 
-                    Console.WriteLine("\nPlease choose a valid Vertical position:");
+                    Console.WriteLine("\nVertical start position:");
                     int y = AcquireValidIntegerWithin(0, 9 - (!horizontal ? Ship.Length-1 : 0));
                     // These positions have Room for these ships, but-!
                     // .. We need to check if any other ships are blocking it
@@ -133,13 +133,21 @@ namespace Broadsides
             foreach (ship Ship in computerShips)
             {
                 bool validPosition = false;
+                // While the computer does Not have a valid position for its ship..
                 while (!validPosition)
                 {
+                    // Horizontal or not?
                     bool horizontal = (rnd.Next(0, 2) == 1);
+
+                    // If it is horizontal, than the x-value is adjusted to the length of the ship, thereby preventing the ship being placed out of bounds.
                     int x = rnd.Next(0, 10 - (horizontal ? Ship.Length : 0));
+                    // If it is not hortizontal, then the y-value (Vertical coordinate) is adjusted to the length of the ship, -||-
                     int y = rnd.Next(0, 10 - (!horizontal ? Ship.Length : 0));
+
+                    // If there is no ship already on this board, along the length of the ship we're about to place, at x and y coordinate, horizontally or not...
                     if (!ShipInTheWay(computerBoard, Ship, x, y, horizontal))
                     {
+                        // Then Place the ship on those Fields!
                         for (int i = 0; i < Ship.Length; i++)
                         {
                             if (horizontal)
@@ -169,59 +177,143 @@ namespace Broadsides
             while (!gameOver)
             {
                 Console.Clear();
-                round++;
-                Console.WriteLine("####### R O U N D   " + round + " #######");
 
-                DrawBoard(playerBoard);
-
-                Console.WriteLine("\nYour ships and how they are doing:");
-                foreach (ship Ship in playerShips)
+                // Pre-Round test to see if User has lost.
+                if (AllShipsSunk(playerShips))
                 {
-                    Console.WriteLine(Ship.Type + " " + Ship.Hits + "/" + Ship.Length);
+                    Console.Clear();
+                    gameOver = true;
+                    Console.WriteLine("All of your ships have sunk! You LOSE!");
                 }
-                Console.WriteLine("Press Any Key to Continue to Shooting");
-                Console.ReadKey();
-                Console.WriteLine();
 
-
-                // Player gets first shot!
-                DrawTacticalDisplay(computerBoard);
-
-
-                bool validShot = false;
-                while (!validShot)
+                if (!gameOver)
                 {
-                    Console.WriteLine("Please choose a horizontal coordinate:");
-                    int x = AcquireValidIntegerWithin(0, 9);
-                    Console.WriteLine("Please choose a vertical coordinate:");
-                    int y = AcquireValidIntegerWithin(0, 9);
+                    round++;
+                    Console.WriteLine("####### R O U N D   " + round + " #######");
 
-                    if (!computerBoard[y][x].IsHit)
+                    DrawBoard(playerBoard);
+
+                    Console.WriteLine("\nYour ships and how they are doing:");
+                    foreach (ship Ship in playerShips)
                     {
-                        computerBoard[y][x].IsHit = true;
-                        validShot = true;
-                        if(computerBoard[y][x]._Ship != null)
+                        Console.WriteLine(Ship.Type + " HP: " + (Ship.Length - Ship.Hits) + "/" + Ship.Length);
+                    }
+                    Console.WriteLine("Press Any Key to Continue to Shooting");
+                    Console.ReadKey();
+                    Console.WriteLine();
+
+
+                    // Player gets first shot!
+
+                    bool validShot = false;
+                    while (!validShot)
+                    {
+                        Console.Clear();
+                        DrawTacticalDisplay(computerBoard);
+
+                        Console.WriteLine("Please choose a horizontal coordinate:");
+                        int x = AcquireValidIntegerWithin(0, 9);
+                        Console.WriteLine("Please choose a vertical coordinate:");
+                        int y = AcquireValidIntegerWithin(0, 9);
+
+                        field Field = computerBoard[y][x];
+                        if(!Field.IsHit)
                         {
-                            Console.WriteLine("Hit confirmed! Enemy ship has taken damage!");
+                            Field.IsHit = true;
+                            validShot = true;
+                            Console.Clear();
+                            DrawTacticalDisplay(computerBoard);
+                            if (Field._Ship != null)
+                            {
+                                Console.WriteLine("Hit confirmed! Enemy ship has taken damage!");
+                                if (Field._Ship.Sunk)
+                                {
+                                    Console.WriteLine("An enemy vessel has been sunk!");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Miss! No ship there!");
+                            }
+                            Console.WriteLine("Press Any Key to Continue");
+                            Console.ReadKey();
+                            Console.WriteLine();
                         }
                         else
                         {
-                            Console.WriteLine("No ships!");
+                            Console.WriteLine("You have already fired at this position! It is against orders to waste ammunition!");
                         }
-                        Console.WriteLine("Press Any Key to Continue");
-                        Console.ReadKey();
-                        Console.WriteLine();
-                    }
-                    else
-                    {
-                        Console.WriteLine("You have already fired at this position! It is against orders to waste ammunition!");
                     }
                 }
 
+                // Pre-Computer's turn to see if Computer has lost.
+                if (AllShipsSunk(computerShips))
+                {
+                    Console.Clear();
+                    gameOver = true;
+                    Console.WriteLine("You have sunk all of the Enemy's ships! You WIN!");
+                }
 
+                // Computer's turn to shoot!
+                if (!gameOver)
+                {
+                    Random rnd = new Random();
+                    bool validShot = false;
+                    int x = 0;
+                    int y = 0;
+                    while (!validShot)
+                    {
+                        x = rnd.Next(0, 10);
+                        y = rnd.Next(0, 10);
+                        field Field = playerBoard[y][x];
+                        if(!Field.IsHit)
+                        {
+                            validShot = true;
+                            Field.IsHit = true;
+                            if(Field._Ship != null)
+                            {
+                                Console.WriteLine("Computer has hit your " + Field._Ship.Type + "!");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Computer has missed!");
+                            }
+                            Console.WriteLine("Press Any Key to Continue");
+                            Console.ReadKey();
+                            Console.WriteLine();
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("This is your board:");
+            DrawBoard(playerBoard);
+            Console.WriteLine("\nThis is Computer's board:");
+            DrawBoard(computerBoard);
+            Console.ReadKey();
+        }
 
-
-                //gameOver = true;
+        /// <summary>
+        /// Checks if all ships in the list have been sunk.
+        /// </summary>
+        /// <param name="ships">The list of ships to be checked.</param>
+        /// <returns>True if all ships in list are sunk.</returns>
+        public static bool AllShipsSunk(List<ship> ships)
+        {
+            int sunkenShips = 0;
+            foreach (ship Ship in ships)
+            {
+                if (Ship.Sunk)
+                {
+                    sunkenShips++;
+                }
+            }
+            if (sunkenShips < ships.Count)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -232,7 +324,7 @@ namespace Broadsides
         public static void DrawTacticalDisplay(field[][] board)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("Choose where to shoot!\n00 1 2 3 4 5 6 7 8 910");
+            Console.WriteLine("Choose where to shoot!\ny\\x1 2 3 4 5 6 7 8 9¹0");
 
             for (int i = 0; i < board.Length; i++)
             {
@@ -290,7 +382,7 @@ namespace Broadsides
         /// <returns>A user-specified Integer inclusively between minValue and maxValue</returns>
         public static int AcquireValidIntegerWithin(int minValue, int maxValue)
         {
-            Console.WriteLine("\nPlease write a number between " + (minValue+1) + " and " + (maxValue+1));
+            Console.WriteLine("Valid values are from " + (minValue+1) + " to " + (maxValue+1));
             bool validNumber = false;
             string input;
             int output = 0;
@@ -340,6 +432,7 @@ namespace Broadsides
         {
             for (int i = 0; i < Ship.Length; i++)
             {
+                // If the board already has a Ship in any of the coordinates in the path of the new ship, then return true that there is a Ship In The Way.
                 if (horizontal && board[y][x + i]._Ship != null || !horizontal && board[y + i][x]._Ship != null)
                 {
                     return true;
@@ -357,7 +450,7 @@ namespace Broadsides
             Random rnd = new Random();
             Console.WriteLine("\n######## Board ########");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(" 0 1 2 3 4 5 6 7 8 910");
+            Console.WriteLine("y\\x1 2 3 4 5 6 7 8 9¹0");
             for (int i = 0; i < board.Length; i++)
             {
                 Console.ForegroundColor = ConsoleColor.White;
