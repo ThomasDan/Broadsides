@@ -9,10 +9,8 @@ namespace Broadsides
     class Program
     {
         public static field[][] playerBoard;
-        public static field[][] playerShots;
         public static List<ship> playerShips = new List<ship>();
         public static field[][] computerBoard;
-        public static field[][] computerShots;
         public static List<ship> computerShips = new List<ship>();
         static void Main(string[] args)
         {
@@ -36,12 +34,14 @@ namespace Broadsides
             }
         }
 
+        /// <summary>
+        /// The Pre-Game setup where Player & Computer sets down their ships.
+        /// </summary>
         public static void GameSetup()
         {
             Console.Clear();
             // Resetting the Player.
             playerBoard = GenerateEmptyTenByTen();
-            playerShots = GenerateEmptyTenByTen();
             playerShips.Clear();
             playerShips.Add(new ship("Aircraft Carrier", 5));
             playerShips.Add(new ship("Battleship", 4));
@@ -51,7 +51,6 @@ namespace Broadsides
 
             // Resetting the Computer.
             computerBoard = GenerateEmptyTenByTen();
-            computerShots = GenerateEmptyTenByTen();
             computerShips.Clear();
             computerShips.Add(new ship("Aircraft Carrier", 5));
             computerShips.Add(new ship("Battleship", 4));
@@ -62,7 +61,7 @@ namespace Broadsides
             foreach(ship Ship in playerShips)
             {
                 Console.WriteLine("This is your board, place your ship!");
-                drawActorsOwnBoard(playerBoard);
+                DrawBoard(playerBoard);
 
 
                 Console.WriteLine("\nYou are about to place down your " + Ship.Type + ", it is " + Ship.Length + " fields long.\nh. Horizontal | v. Vertical");
@@ -95,22 +94,15 @@ namespace Broadsides
 
                     // Acquiring coordinates. X = Horizontal, Y = Vertical
                     Console.WriteLine("\nPlease choose a valid Horizontal position:");
-                    int x = acquireValidIntegerWithin(0, 9 - (horizontal ? Ship.Length-1 : 0));
+                    int x = AcquireValidIntegerWithin(0, 9 - (horizontal ? Ship.Length-1 : 0));
 
                     Console.WriteLine("\nPlease choose a valid Vertical position:");
-                    int y = acquireValidIntegerWithin(0, 9 - (!horizontal ? Ship.Length-1 : 0));
+                    int y = AcquireValidIntegerWithin(0, 9 - (!horizontal ? Ship.Length-1 : 0));
                     // These positions have Room for these ships, but-!
                     // .. We need to check if any other ships are blocking it
-                    bool shipInTheWay = false;
-                    for (int i = 0; i < Ship.Length; i++)
-                    {
-                        if(horizontal && playerBoard[y][x + i].IsShip || !horizontal && playerBoard[y + i][x].IsShip)
-                        {
-                            shipInTheWay = true;
-                            break;
-                        }
-                    }
-                    if(shipInTheWay)
+                    
+                    
+                    if(ShipInTheWay(playerBoard, Ship, x, y, horizontal))
                     {
                         Console.WriteLine("A ship is already placed there!");
                     }
@@ -135,9 +127,88 @@ namespace Broadsides
                 }
             }
             Console.Clear();
+
+            // Computer ship placements
+            Random rnd = new Random();
+            // The computer is dumb, and will need to make randomized choices.
+
+            foreach (ship Ship in computerShips)
+            {
+                bool validPosition = false;
+                while (!validPosition)
+                {
+                    bool horizontal = (rnd.Next(0, 2) == 1);
+                    int x = rnd.Next(0, 10 - (horizontal ? Ship.Length : 0));
+                    int y = rnd.Next(0, 10 - (!horizontal ? Ship.Length : 0));
+                    if (!ShipInTheWay(computerBoard, Ship, x, y, horizontal))
+                    {
+                        for (int i = 0; i < Ship.Length; i++)
+                        {
+                            if (horizontal)
+                            {
+                                computerBoard[y][x + i].IsShip = true;
+                                computerBoard[y][x + i]._Ship = Ship;
+                            }
+                            else
+                            {
+                                computerBoard[y + i][x]._Ship = Ship;
+                                computerBoard[y + i][x].IsShip = true;
+                            }
+                        }
+                        validPosition = true;
+                    }
+                }
+            }
+
+            Console.Clear();
             Console.WriteLine("You have placed all your ships like so:");
-            drawActorsOwnBoard(playerBoard);
+            DrawBoard(playerBoard);
+
+            Console.WriteLine("Press Any Key to Continue");
             Console.ReadKey();
+            GameLoop();
+        }
+
+        /// <summary>
+        /// The game proper, where Computer and Player take turns trying to sink each other's ships.
+        /// </summary>
+        public static void GameLoop()
+        {
+            bool gameOver = false;
+            while (!gameOver)
+            {
+                // Player gets first shot!
+
+                // Draw Computer's map, but without the ships, and only where there have been shots.
+
+
+
+                
+
+            }
+        }
+
+
+        public static void TacticalDisplay(field[][] board)
+        {
+            for (int i = 0; i < board.Length; i++)
+            {
+                for (int j = 0; j < board[i].Length; j++)
+                {
+                    field Field = board[i][j];
+                    if(Field.IsHit)
+                    {
+                        if(Field._Ship == null)
+                        {
+                            // IF there is no ship, draw mundane hit.
+                        }
+                        else
+                        {
+                            // If there is a hit ship, draw a Success hit.
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -146,7 +217,7 @@ namespace Broadsides
         /// <param name="minValue">The Minimum value of Integer you want.</param>
         /// <param name="maxValue">The Maximum value of Integer you want.</param>
         /// <returns>A user-specified Integer inclusively between minValue and maxValue</returns>
-        public static int acquireValidIntegerWithin(int minValue, int maxValue)
+        public static int AcquireValidIntegerWithin(int minValue, int maxValue)
         {
             Console.WriteLine("\nPlease write a number between " + (minValue+1) + " and " + (maxValue+1));
             bool validNumber = false;
@@ -185,30 +256,85 @@ namespace Broadsides
             return newBoard;
         }
 
-        public static void drawActorsOwnBoard(field[][] board)
+        /// <summary>
+        /// During GameSetup(), when placing down your ships, this function checks if another ship is placed on the X Y coordinates given, or anywhere along the length of the ship.
+        /// </summary>
+        /// <param name="board">The board the ship is going to be placed on.</param>
+        /// <param name="Ship">The ship that is soon to be placed. Really just need it for its Length.</param>
+        /// <param name="x">Horizontal Coordinate</param>
+        /// <param name="y">Vertical Coordinate</param>
+        /// <param name="horizontal">If the ship is to be placed horizontally, vertically if false</param>
+        /// <returns>If it at any point encountered a ship in the fields of the new ship.</returns>
+        public static bool ShipInTheWay(field[][] board, ship Ship, int x, int y, bool horizontal)
         {
+            for (int i = 0; i < Ship.Length; i++)
+            {
+                if (horizontal && playerBoard[y][x + i].IsShip || !horizontal && playerBoard[y + i][x].IsShip)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Draws a player's board with boats on it. Boats are marked with the first letter of their type typed twice, unless it has been hit in that square, in which case it's XX. Water (Ship-less Field) is marked with ▓▓ or ▒▒.
+        /// </summary>
+        /// <param name="board">The boat-filled board to be displayed.</param>
+        public static void DrawBoard(field[][] board)
+        {
+            Random rnd = new Random();
             Console.WriteLine("\n######## Board ########");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(" 0 1 2 3 4 5 6 7 8 910");
             for (int i = 0; i < board.Length; i++)
             {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write((i == 9 ? "" : " ") + (i+1));
+                
                 for (int j = 0; j < board[i].Length; j++)
                 {
+                    // Alternating color!
+                    if ((i + j) % 2 == 0)
+                    { 
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                    }
+
                     field Field = board[i][j];
-                    if (Field.IsShip)
+                    if (Field._Ship != null)
                     {
                         if (Field.IsHit)
                         {
-                            Console.Write("X");
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            Console.BackgroundColor = ConsoleColor.DarkRed;
+                            Console.Write("XX");
                         }
                         else
                         {
-                            Console.Write(Field._Ship.Type.Substring(0, 1));
-
+                            Console.BackgroundColor = ConsoleColor.DarkBlue;
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                            Console.Write(Field._Ship.Type.Substring(0, 1) + Field._Ship.Type.Substring(0, 1));
                         }
                     }
                     else
                     {
-                        Console.Write("~");
+                        switch(rnd.Next(0, 3))
+                        {
+                            case 0:
+                                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                                Console.Write("▒▒");
+                                break;
+                            default:
+                                Console.Write("▓▓");
+                                break;
+                        }
                     }
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
                 Console.WriteLine();
             }

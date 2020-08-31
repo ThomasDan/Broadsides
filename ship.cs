@@ -28,9 +28,11 @@ namespace Broadsides
             get { return this.hits; }
             set 
             { 
-                this.hits = value; 
-                if(this.hits.Equals(length))
+                this.hits = value;
+                Console.WriteLine("For Testing Purposes, I tell you that I, " + this.type + ", have been shot " + this.hits + " out of " + this.length + " times.");
+                if(this.hits == length)
                 {
+                    Console.WriteLine("For Testing Purposes, I tell you that I, " + this.type + ", have been sunk. :(");
                     this.sunk = true;
                 }
             }

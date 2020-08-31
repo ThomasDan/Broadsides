@@ -8,18 +8,18 @@ namespace Broadsides
 {
     class field
     {
-        private bool isShip;
         private bool isHit;
         private ship _ship;
-        public bool IsShip
-        {
-            get { return this.isShip; }
-            set { this.isShip = value; }
-        }
         public bool IsHit
         {
             get { return this.isHit; }
-            set { this.isHit = value; }
+            set { 
+                this.isHit = value; 
+                if(this._ship != null)
+                {
+                    this._ship.Hits++;
+                }
+            }
         }
         public ship _Ship
         {
@@ -29,7 +29,6 @@ namespace Broadsides
 
         public field()
         {
-            isShip = false;
             isHit = false;
         }
     }
