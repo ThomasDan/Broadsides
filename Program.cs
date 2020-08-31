@@ -112,12 +112,10 @@ namespace Broadsides
                         {
                             if (horizontal)
                             {
-                                playerBoard[y][x + i].IsShip = true;
                                 playerBoard[y][x + i]._Ship = Ship;
                             }
                             else
                             {
-                                playerBoard[y + i][x].IsShip = true;
                                 playerBoard[y + i][x]._Ship = Ship;
                             }
                         }
@@ -146,13 +144,11 @@ namespace Broadsides
                         {
                             if (horizontal)
                             {
-                                computerBoard[y][x + i].IsShip = true;
                                 computerBoard[y][x + i]._Ship = Ship;
                             }
                             else
                             {
                                 computerBoard[y + i][x]._Ship = Ship;
-                                computerBoard[y + i][x].IsShip = true;
                             }
                         }
                         validPosition = true;
@@ -160,12 +156,6 @@ namespace Broadsides
                 }
             }
 
-            Console.Clear();
-            Console.WriteLine("You have placed all your ships like so:");
-            DrawBoard(playerBoard);
-
-            Console.WriteLine("Press Any Key to Continue");
-            Console.ReadKey();
             GameLoop();
         }
 
@@ -175,40 +165,121 @@ namespace Broadsides
         public static void GameLoop()
         {
             bool gameOver = false;
+            int round = 0;
             while (!gameOver)
             {
+                Console.Clear();
+                round++;
+                Console.WriteLine("####### R O U N D   " + round + " #######");
+
+                DrawBoard(playerBoard);
+
+                Console.WriteLine("\nYour ships and how they are doing:");
+                foreach (ship Ship in playerShips)
+                {
+                    Console.WriteLine(Ship.Type + " " + Ship.Hits + "/" + Ship.Length);
+                }
+                Console.WriteLine("Press Any Key to Continue to Shooting");
+                Console.ReadKey();
+                Console.WriteLine();
+
+
                 // Player gets first shot!
-
-                // Draw Computer's map, but without the ships, and only where there have been shots.
-
+                DrawTacticalDisplay(computerBoard);
 
 
-                
+                bool validShot = false;
+                while (!validShot)
+                {
+                    Console.WriteLine("Please choose a horizontal coordinate:");
+                    int x = AcquireValidIntegerWithin(0, 9);
+                    Console.WriteLine("Please choose a vertical coordinate:");
+                    int y = AcquireValidIntegerWithin(0, 9);
 
+                    if (!computerBoard[y][x].IsHit)
+                    {
+                        computerBoard[y][x].IsHit = true;
+                        validShot = true;
+                        if(computerBoard[y][x]._Ship != null)
+                        {
+                            Console.WriteLine("Hit confirmed! Enemy ship has taken damage!");
+                        }
+                        else
+                        {
+                            Console.WriteLine("No ships!");
+                        }
+                        Console.WriteLine("Press Any Key to Continue");
+                        Console.ReadKey();
+                        Console.WriteLine();
+                    }
+                    else
+                    {
+                        Console.WriteLine("You have already fired at this position! It is against orders to waste ammunition!");
+                    }
+                }
+
+
+
+
+                //gameOver = true;
             }
         }
 
-
-        public static void TacticalDisplay(field[][] board)
+        /// <summary>
+        /// Draw the "Tactical" Display of the enemy's board. 
+        /// </summary>
+        /// <param name="board">The board of the opposing Player.</param>
+        public static void DrawTacticalDisplay(field[][] board)
         {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("Choose where to shoot!\n00 1 2 3 4 5 6 7 8 910");
+
             for (int i = 0; i < board.Length; i++)
             {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Write((i == 9 ? "" : " ") + (i + 1));
+                Console.ForegroundColor = ConsoleColor.White;
+
+
                 for (int j = 0; j < board[i].Length; j++)
                 {
                     field Field = board[i][j];
+                    Console.ForegroundColor = ConsoleColor.White;
+                    if((i+j) % 2 == 0)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Green;
+                    }
+                    else
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkGreen;
+                    }
+
                     if(Field.IsHit)
                     {
                         if(Field._Ship == null)
                         {
                             // IF there is no ship, draw mundane hit.
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            Console.Write("()");
                         }
                         else
                         {
                             // If there is a hit ship, draw a Success hit.
+                            Console.BackgroundColor = ConsoleColor.DarkRed;
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            Console.Write("{}");
                         }
                     }
+                    else
+                    {
+                        Console.Write("  ");
+                    }
                 }
+                Console.WriteLine();
             }
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
         /// <summary>
@@ -239,7 +310,7 @@ namespace Broadsides
         }
         
         /// <summary>
-        /// Makes a 10x10 grid of fields which have their isShip and isHit set to false.
+        /// Makes a 10x10 grid of fields which has their isHit set to false.
         /// </summary>
         /// <returns>10x10 field grid, isShip & isHit are both false.</returns>
         public static field[][] GenerateEmptyTenByTen()
@@ -269,7 +340,7 @@ namespace Broadsides
         {
             for (int i = 0; i < Ship.Length; i++)
             {
-                if (horizontal && playerBoard[y][x + i].IsShip || !horizontal && playerBoard[y + i][x].IsShip)
+                if (horizontal && board[y][x + i]._Ship != null || !horizontal && board[y + i][x]._Ship != null)
                 {
                     return true;
                 }
