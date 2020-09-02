@@ -2,6 +2,7 @@
 Also known as Battleships. Features a somewhat competent AI opponent.
 
 This was made for a school assignment. The fancy GUI and smart-ish AI was some extra work I added for spice.
+The code is sparsely commented, but I made sure to name everything not too obscurely. Most of the code should read like proper sentences.
 
 In regards to the disputed rule of "If you are allowed to place ships next to each other", you are allowed to.
 Not only because I did not know about this potential rule until after I was pretty much done with the game, and it would be a bit of a bother to code,
