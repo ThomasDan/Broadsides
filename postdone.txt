@@ -4,6 +4,31 @@ Broadsides post-completion ideas:
 -Stop shooting random if it makes a hit, until it has sunk
 	the ship.
 
+The AI:
+Hit a ship at 3,3 thanks to random.
+-Coords recorded.
+-Ship sunk false.
+-streak++
+
+AI will shoot UP, Right, Down then left.
+
+AI found more ship at 3,2.
+-Coords recorded.
+-Ship sunk false.
+-streak++
+
+AI goes Left, hits no more ship at 3,1.
+
+AI has already tried hitting 3,1, and so will
+instead try shooting at 3,4 (3,2+streak)
+
+
+
+
+
+
+
+
 2. Arrow-navigatable board when placing shots and boats.
 
 3. Sac Bonus task:

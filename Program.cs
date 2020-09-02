@@ -12,6 +12,7 @@ namespace Broadsides
         public static List<ship> playerShips = new List<ship>();
         public static field[][] computerBoard;
         public static List<ship> computerShips = new List<ship>();
+        public static ArtificialIntelligence computer = new ArtificialIntelligence();
         static void Main(string[] args)
         {
             bool quit = false;
@@ -257,22 +258,32 @@ namespace Broadsides
                 // Computer's turn to shoot!
                 if (!gameOver)
                 {
-                    Random rnd = new Random();
+                    
                     bool validShot = false;
-                    int x = 0;
-                    int y = 0;
+                    Coordinate nextShot = new Coordinate(0, 0);
                     while (!validShot)
                     {
-                        x = rnd.Next(0, 10);
-                        y = rnd.Next(0, 10);
-                        field Field = playerBoard[y][x];
+                        
+                        nextShot = computer.GetNextShot(playerBoard);
+                        field Field = playerBoard[nextShot.Y][nextShot.X];
                         if(!Field.IsHit)
                         {
+                            Console.WriteLine("Computer: I SHOOT AT " + nextShot.Y + ", " + nextShot.X);
+
                             validShot = true;
                             Field.IsHit = true;
                             if(Field._Ship != null)
                             {
                                 Console.WriteLine("Computer has hit your " + Field._Ship.Type + "!");
+                                computer.LastShipHitSunk = false;
+                                computer.LastShipHitCoordinate = nextShot;
+                                computer.Streak++;
+                                if (Field._Ship.Sunk)
+                                {
+                                    Console.WriteLine("Computer has sunk your " + Field._Ship.Type + "!");
+                                    computer.Streak = 0;
+                                    computer.LastShipHitSunk = true;
+                                }
                             }
                             else
                             {

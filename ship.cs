@@ -31,7 +31,6 @@ namespace Broadsides
                 this.hits = value;
                 if(this.hits == length)
                 {
-                    Console.WriteLine("Damn! You've sunk my " + this.type + "! :(");
                     this.sunk = true;
                 }
             }
