@@ -261,7 +261,7 @@ namespace Broadsides
                 {
                     
                     bool validShot = false;
-                    Coordinate nextShot = new Coordinate(0, 0);
+                    Coordinate nextShot;
                     while (!validShot)
                     {
                         
@@ -269,7 +269,7 @@ namespace Broadsides
                         field Field = playerBoard[nextShot.Y][nextShot.X];
                         if(!Field.IsHit)
                         {
-                            Console.WriteLine("Computer: I SHOOT AT " + nextShot.Y + ", " + nextShot.X);
+                            Console.WriteLine("Computer: I SHOOT AT " + nextShot.Y+1 + ", " + nextShot.X+1);
 
                             validShot = true;
                             Field.IsHit = true;

@@ -15,7 +15,7 @@ namespace Broadsides
             get { return this.isHit; }
             set { 
                 this.isHit = value; 
-                if(this._ship != null)
+                if(this._ship != null && value)
                 {
                     this._ship.Hits++;
                 }
