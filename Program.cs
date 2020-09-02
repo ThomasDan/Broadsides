@@ -12,7 +12,7 @@ namespace Broadsides
         public static List<ship> playerShips = new List<ship>();
         public static field[][] computerBoard;
         public static List<ship> computerShips = new List<ship>();
-        public static ArtificialIntelligence computer = new ArtificialIntelligence();
+        public static ArtificialIntelligence computer;
         static void Main(string[] args)
         {
             bool quit = false;
@@ -51,6 +51,7 @@ namespace Broadsides
             playerShips.Add(new ship("Patrolship", 2));
 
             // Resetting the Computer.
+            computer = new ArtificialIntelligence();
             computerBoard = GenerateEmptyTenByTen();
             computerShips.Clear();
             computerShips.Add(new ship("Aircraft Carrier", 5));
@@ -376,6 +377,7 @@ namespace Broadsides
                     }
                     else
                     {
+                        // Unhit square. Might contain a ship. Might not.
                         Console.Write("  ");
                     }
                 }
