@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Broadsides
 {
-    class ship
+    class Ship
     {
         private string type;
         private int length;
@@ -39,7 +39,7 @@ namespace Broadsides
         {
             get { return this.sunk; }
         }
-        public ship(string Type, int Length)
+        public Ship(string Type, int Length)
         {
             type = Type;
             length = Length;

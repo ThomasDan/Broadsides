@@ -17,7 +17,6 @@ namespace Broadsides
             get { return this.lastShipHitCoordinate; }
             set { this.lastShipHitCoordinate = value; }
         }
-        
         public bool LastShipHitSunk
         {
             get { return this.lastShipHitSunk; }
@@ -37,7 +36,13 @@ namespace Broadsides
         }
 
         public Random rnd = new Random();
-        public Coordinate GetNextShot(field[][] board)
+
+        /// <summary>
+        /// Get the next coordinates that the AI wants to shoot at.
+        /// </summary>
+        /// <param name="board">Opposing player's board.</param>
+        /// <returns>Coordinates Computer wants to shoot at.</returns>
+        public Coordinate GetNextShot(Field[][] board)
         {
             Coordinate nextShot = new Coordinate(this.lastShipHitCoordinate.Y, this.lastShipHitCoordinate.X);
             if (!this.lastShipHitSunk)
@@ -51,7 +56,7 @@ namespace Broadsides
                     board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit && 
                     board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1]._Ship != null)
                 {
-                    // However! If the next space in the direction has already been hit, it's time to turn around instead, using streak to return to the other end of the ship.
+                    // However! If the next space in the end of a direction has already been hit, it's time to turn around instead, using streak to return to the other end of the ship.
                     if(!board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit)
                     {
                         nextShot.X--;

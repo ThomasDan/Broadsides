@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Broadsides
 {
-    class field
+    class Field
     {
         private bool isHit;
-        private ship _ship;
+        private Ship _ship;
         public bool IsHit
         {
             get { return this.isHit; }
@@ -21,13 +21,13 @@ namespace Broadsides
                 }
             }
         }
-        public ship _Ship
+        public Ship _Ship
         {
             get { return this._ship; }
             set { this._ship = value; }
         }
 
-        public field()
+        public Field()
         {
             isHit = false;
         }
