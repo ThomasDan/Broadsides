@@ -103,7 +103,7 @@ namespace Broadsides
                             break;
                     }
                 }
-
+                Console.Clear();
                 
                 bool validPosition = false;
                 
@@ -116,11 +116,11 @@ namespace Broadsides
                 {
 
                     // Acquiring coordinates. X = Horizontal, Y = Vertical
-                    // You might notice this: "9 - (horizontal ? Ship.Length-1 : 0)" and the opposite for the Vertical (y) coordiante below.
+                    // You might notice this: "9 - (horizontal ? Ship.Length : 1)" and the opposite for the Vertical (y) coordiante below.
                     // It means 9 minus either ship length or 0, depending on if it's horizontal or not.
                     // This way, the ship cannot stick outside of the board. So a horizontal carrier (length 5) can at most be placed at horizontal(x) coordinate 5. So it will be placed on 5, 6, 7, 8, 9 (5 total squares)
 
-                    Coordinate coordinate = InteractiveBoard(playerBoard, true, "Pick a position for your " + ship.Type + ", it's " + ship.Length + " long.", (horizontal ? ship.Length : 1), (!horizontal ? ship.Length : 1));
+                    Coordinate coordinate = InteractiveBoard(playerBoard, true, "Pick a position for your " + ship.Type + ", it's " + ship.Length + " long. You are going to place it " + (horizontal ? "Horizontally." : "Vertically."), (horizontal ? ship.Length : 1), (!horizontal ? ship.Length : 1));
 
 
                     // These positions have Room for these ships, but-!
@@ -454,7 +454,7 @@ namespace Broadsides
                             Console.BackgroundColor = ConsoleColor.Green;
                         }
 
-                        if(i == output.Y && j == output.X)
+                        if (i == output.Y && j == output.X)
                         {
                             Console.BackgroundColor = ConsoleColor.DarkYellow;
                             Console.Write("##");
@@ -549,7 +549,6 @@ namespace Broadsides
                 }
                 Console.Clear();
             }
-            
             playerPreviousCoords = output;
             return output;
         }

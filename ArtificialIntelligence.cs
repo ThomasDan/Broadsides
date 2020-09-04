@@ -51,67 +51,68 @@ namespace Broadsides
 
                 // Computer checks if it can find a likely direction for the ship (By having hit two adjacent squares, based on the lastShipHitCoordinate)
                 // FOr example, if it hit the ship last turn, and there's a ship left of that, the next part of the ship might be on the right.
-                if(this.lastShipHitCoordinate.X - 1 >= 0 && 
+                if(
                     this.lastShipHitCoordinate.X + 1 < board[0].Length && 
                     board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit && 
                     board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1]._Ship != null)
                 {
                     // However! If the next space in the end of a direction has already been hit, it's time to turn around instead, using streak to return to the other end of the ship.
-                    if(!board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit)
+                    if(this.lastShipHitCoordinate.X - 1 >= 0 && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit)
                     {
                         nextShot.X--;
                     }
-                    else
+                    else if (this.lastShipHitCoordinate.X + this.streak < board[0].Length)
                     {
                         nextShot.X += this.streak;
+                        this.streak = 0;
                     }
                 }
                 else if(
                     this.lastShipHitCoordinate.X - 1 >= 0 && 
-                    this.lastShipHitCoordinate.X + 1 < board[0].Length && 
                     board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit && 
                     board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1]._Ship != null
                     )
                 {
-                    if (!board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit)
+                    if (this.lastShipHitCoordinate.X + 1 < board[0].Length && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit)
                     {
                         nextShot.X++;
                     }
-                    else
+                    else if (this.lastShipHitCoordinate.X - this.streak >= 0)
                     {
                         nextShot.X -= this.streak;
+                        this.streak = 0;
                     }
                 }
                 else if(
-                    this.lastShipHitCoordinate.Y - 1 >= 0 && 
-                    this.lastShipHitCoordinate.Y + 1 < board.Length && 
+                    this.lastShipHitCoordinate.Y - 1 >= 0 &&
                     board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X].IsHit && 
                     board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X]._Ship != null
                     )
                 {
-                    if (!board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X].IsHit)
+                    if (this.lastShipHitCoordinate.Y + 1 < board.Length && !board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X].IsHit)
                     {
                         nextShot.Y++;
                     }
-                    else
+                    else if (this.lastShipHitCoordinate.Y - this.streak >= 0)
                     {
                         nextShot.Y -= this.streak;
+                        this.streak = 0;
                     }
                 }
                 else if(
-                    this.lastShipHitCoordinate.Y - 1 >= 0 && 
                     this.lastShipHitCoordinate.Y + 1 < board.Length && 
                     board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X].IsHit && 
                     board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X]._Ship != null
                     )
                 {
-                    if (!board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X].IsHit)
+                    if (this.lastShipHitCoordinate.Y - 1 >= 0 && !board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X].IsHit)
                     {
                         nextShot.Y--;
                     }
-                    else
+                    else if(this.lastShipHitCoordinate.Y + this.streak < board.Length)
                     {
                         nextShot.Y += this.streak;
+                        this.streak = 0;
                     }
                 }
                 else
