@@ -407,6 +407,15 @@ namespace Broadsides
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        /// <summary>
+        /// Interactive board. Allows you to use the arrow-keys to navigate the board, be it your own board to place ships and the enemy's board to shoot.
+        /// </summary>
+        /// <param name="board">Your board or your enemy's board.</param>
+        /// <param name="friendly">Your own board (true) or not (false).</param>
+        /// <param name="purpose">What the player is supposed to do. For Example: "Choose where to shoot!"</param>
+        /// <param name="horizontalMax">Optional Value. This is here in case you are placing down ships Horizontally, in which case you should input ship.Length.</param>
+        /// <param name="verticalMax">Optional Value. This is here in case you are placing down ships Vertically, -||-</param>
+        /// <returns>The coordinate of the final selection.</returns>
         public static Coordinate InteractiveBoard(Field[][] board, bool friendly, string purpose, int horizontalMax = 1, int verticalMax = 1)
         {
             Coordinate output = new Coordinate(playerPreviousCoords);
@@ -422,7 +431,6 @@ namespace Broadsides
 
             while (!done)
             {
-                Console.Clear();
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("y\\xA B C D E F G H I J");
 
@@ -539,8 +547,9 @@ namespace Broadsides
                             break;
                     }
                 }
+                Console.Clear();
             }
-
+            
             playerPreviousCoords = output;
             return output;
         }
