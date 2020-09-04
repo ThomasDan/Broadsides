@@ -136,7 +136,7 @@ namespace Broadsides
                 }
             }
 
-            if(board[nextShot.Y][nextShot.X].IsHit)
+            if(nextShot.Y < 0 || nextShot.Y >= board.Length || nextShot.X < 0 || nextShot.X >= board[0].Length || board[nextShot.Y][nextShot.X].IsHit)
             {
                 // AI wants to shoot at a field that has already been hit. This is either due to not knowing of a ship or the AI spazzing out and trying to hit fields it has already hit.
                 // So this acts as not just the AI getting random coordinates, but also as a contingency in case the AI goes bonkers.

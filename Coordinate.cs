@@ -26,5 +26,10 @@ namespace Broadsides
             x = X;
             y = Y;
         }
+        public Coordinate(Coordinate coordinate)
+        {
+            x = coordinate.X;
+            y = coordinate.Y;
+        }
     }
 }

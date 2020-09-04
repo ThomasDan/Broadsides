@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,11 +11,23 @@ namespace Broadsides
     {
         private static Field[][] playerBoard;
         private static List<Ship> playerShips = new List<Ship>();
+        private static Coordinate playerPreviousCoords = new Coordinate(0, 0);
         private static Field[][] computerBoard;
         private static List<Ship> computerShips = new List<Ship>();
         private static ArtificialIntelligence computer;
+        private static Dictionary<int, string> horizontalValueToLetter = new Dictionary<int, string>();
         static void Main(string[] args)
         {
+            horizontalValueToLetter.Add(0, "A");
+            horizontalValueToLetter.Add(1, "B");
+            horizontalValueToLetter.Add(2, "C");
+            horizontalValueToLetter.Add(3, "D");
+            horizontalValueToLetter.Add(4, "E");
+            horizontalValueToLetter.Add(5, "F");
+            horizontalValueToLetter.Add(6, "G");
+            horizontalValueToLetter.Add(7, "H");
+            horizontalValueToLetter.Add(8, "I");
+            horizontalValueToLetter.Add(9, "J");
             bool quit = false;
             char input;
             while (!quit)
@@ -42,6 +55,7 @@ namespace Broadsides
         {
             Console.Clear();
             // Resetting the Player.
+            playerPreviousCoords = new Coordinate(0, 0);
             playerBoard = GenerateEmptyTenByTen();
             playerShips.Clear();
             playerShips.Add(new Ship("Aircraft Carrier", 5));
@@ -105,16 +119,13 @@ namespace Broadsides
                     // You might notice this: "9 - (horizontal ? Ship.Length-1 : 0)" and the opposite for the Vertical (y) coordiante below.
                     // It means 9 minus either ship length or 0, depending on if it's horizontal or not.
                     // This way, the ship cannot stick outside of the board. So a horizontal carrier (length 5) can at most be placed at horizontal(x) coordinate 5. So it will be placed on 5, 6, 7, 8, 9 (5 total squares)
-                    Console.WriteLine("\nHorizontal start position:");
-                    int x = AcquireValidIntegerWithin(0, 9 - (horizontal ? ship.Length-1 : 0));
 
-                    Console.WriteLine("\nVertical start position:");
-                    int y = AcquireValidIntegerWithin(0, 9 - (!horizontal ? ship.Length-1 : 0));
+                    Coordinate coordinate = InteractiveBoard(playerBoard, true, "Pick a position for your " + ship.Type + ", it's " + ship.Length + " long.", (horizontal ? ship.Length : 1), (!horizontal ? ship.Length : 1));
 
 
                     // These positions have Room for these ships, but-!
                     // .. We need to check if any other ships are blocking it
-                    if(ShipInTheWay(playerBoard, ship, x, y, horizontal))
+                    if(ShipInTheWay(playerBoard, ship, coordinate.X, coordinate.Y, horizontal))
                     {
                         Console.WriteLine("A ship is already placed there!");
                     }
@@ -125,15 +136,15 @@ namespace Broadsides
                         {
                             if (horizontal)
                             {
-                                playerBoard[y][x + i]._Ship = ship;
+                                playerBoard[coordinate.Y][coordinate.X + i]._Ship = ship;
                             }
                             else
                             {
-                                playerBoard[y + i][x]._Ship = ship;
+                                playerBoard[coordinate.Y + i][coordinate.X]._Ship = ship;
                             }
                         }
                         validPosition = true;
-                        Console.WriteLine(ship.Type + " successfully placed at " + (y+1) + ", " + (x+1));
+                        Console.WriteLine(ship.Type + " successfully placed at " + (coordinate.Y+1) + ", " + horizontalValueToLetter[coordinate.X]);
                     }
                 }
             }
@@ -196,7 +207,9 @@ namespace Broadsides
                 {
                     Console.Clear();
                     gameOver = true;
+                    Console.BackgroundColor = ConsoleColor.DarkRed;
                     Console.WriteLine("All of your ships have sunk! You LOSE!");
+                    Console.ResetColor();
                 }
 
                 if (!gameOver)
@@ -215,21 +228,15 @@ namespace Broadsides
                     Console.ReadKey();
                     Console.WriteLine();
 
-
                     // Player gets first shot!
-
                     bool validShot = false;
                     while (!validShot)
                     {
                         Console.Clear();
-                        DrawTacticalDisplay(computerBoard);
 
-                        Console.WriteLine("Please choose a horizontal coordinate:");
-                        int x = AcquireValidIntegerWithin(0, 9);
-                        Console.WriteLine("Please choose a vertical coordinate:");
-                        int y = AcquireValidIntegerWithin(0, 9);
+                        Coordinate coordinate = InteractiveBoard(computerBoard, false, "Choose where to shoot!");
 
-                        Field field = computerBoard[y][x];
+                        Field field = computerBoard[coordinate.Y][coordinate.X];
                         if(!field.IsHit)
                         {
                             field.IsHit = true;
@@ -259,18 +266,20 @@ namespace Broadsides
                     }
                 }
 
-                // Pre-Computer's turn to see if Computer has lost.
+                // Post-Player's turn, let's see if Computer has lost.
                 if (AllShipsSunk(computerShips))
                 {
                     Console.Clear();
                     gameOver = true;
+                    Console.BackgroundColor = ConsoleColor.DarkYellow;
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("You have sunk all of the Enemy's ships! You WIN!");
+                    Console.ResetColor();
                 }
 
                 // Computer's turn to shoot!
                 if (!gameOver)
                 {
-                    
                     bool validShot = false;
                     Coordinate nextShot;
                     while (!validShot)
@@ -280,7 +289,7 @@ namespace Broadsides
                         Field field = playerBoard[nextShot.Y][nextShot.X];
                         if(!field.IsHit)
                         {
-                            Console.WriteLine("Computer: I SHOOT AT " + (nextShot.Y+1) + ", " + (nextShot.X+1));
+                            Console.WriteLine("Computer: I SHOOT AT " + (nextShot.Y+1) + ", " + horizontalValueToLetter[nextShot.X]);
 
                             validShot = true;
                             field.IsHit = true;
@@ -310,7 +319,7 @@ namespace Broadsides
             }
             Console.WriteLine("This is your board:");
             DrawBoard(playerBoard);
-            Console.WriteLine("\nThis is Computer's board:");
+            Console.WriteLine("This is Computer's board:");
             DrawBoard(computerBoard);
             Console.ReadKey();
         }
@@ -347,7 +356,7 @@ namespace Broadsides
         public static void DrawTacticalDisplay(Field[][] board)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("Choose where to shoot!\ny\\x1 2 3 4 5 6 7 8 9¹0");
+            Console.WriteLine("y\\xA B C D E F G H I J");
 
             for (int i = 0; i < board.Length; i++)
             {
@@ -396,6 +405,136 @@ namespace Broadsides
             }
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        public static Coordinate InteractiveBoard(Field[][] board, bool friendly, string purpose, int horizontalMax = 1, int verticalMax = 1)
+        {
+            Coordinate output = new Coordinate(playerPreviousCoords);
+            bool done = false;
+
+            while (!done)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("y\\xA B C D E F G H I J");
+
+                for (int i = 0; i < board.Length; i++)
+                {
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write((i == 9 ? "" : " ") + (i + 1));
+
+
+                    for (int j = 0; j < board[i].Length; j++)
+                    {
+                        Field field = board[i][j];
+                        Console.ForegroundColor = ConsoleColor.White;
+                        if ((i + j) % 2 == 0)
+                        {
+                            Console.BackgroundColor = ConsoleColor.DarkGreen;
+                        }
+                        else
+                        {
+                            Console.BackgroundColor = ConsoleColor.Green;
+                        }
+
+                        if(i == output.Y && j == output.X)
+                        {
+                            Console.BackgroundColor = ConsoleColor.DarkYellow;
+                            Console.Write("##");
+                        }
+                        else if (friendly)
+                        {
+                            if(field._Ship != null)
+                            {
+                                Console.BackgroundColor = ConsoleColor.DarkBlue;
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.Write(field._Ship.Type.Substring(0, 1) + field._Ship.Type.Substring(0, 1));
+                            }
+                            else
+                            {
+                                Console.Write("  ");
+                            }
+                        }
+                        else
+                        {
+                            if (field.IsHit)
+                            {
+                                if (field._Ship == null)
+                                {
+                                    // IF there is no ship, draw mundane hit.
+                                    Console.ForegroundColor = ConsoleColor.Black;
+                                    Console.Write("()");
+                                }
+                                else
+                                {
+                                    // If there is a hit ship, draw a Success hit.
+                                    Console.BackgroundColor = ConsoleColor.DarkRed;
+                                    Console.ForegroundColor = ConsoleColor.Black;
+                                    Console.Write("{}");
+                                }
+                            }
+                            else
+                            {
+                                // Unhit square. Might contain a ship. Might not.
+                                Console.Write("  ");
+                            }
+                        }
+                    }
+                    Console.WriteLine();
+                }
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.ForegroundColor = ConsoleColor.White;
+
+                Console.WriteLine(purpose);
+
+                Console.WriteLine("Use the arrow-keys to move around! Press SpaceBar to Select!");
+                bool correctKey = false;
+                while (!correctKey)
+                {
+                    ConsoleKey key = Console.ReadKey().Key;
+                    switch (key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            if(output.Y - 1 >= 0)
+                            {
+                                correctKey = true;
+                                output.Y--;
+                            }
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if(output.Y + 1 <= board.Length - verticalMax)
+                            {
+                                correctKey = true;
+                                output.Y++;
+                            }
+                            break;
+                        case ConsoleKey.RightArrow:
+                            if (output.X + 1 <= board[0].Length - horizontalMax)
+                            {
+                                correctKey = true;
+                                output.X++;
+                            }
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            if (output.X - 1 >= 0)
+                            {
+                                correctKey = true;
+                                output.X--;
+                            }
+                            break;
+                        case ConsoleKey.Spacebar:
+                            correctKey = true;
+                            done = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            playerPreviousCoords = output;
+            return output;
         }
 
         /// <summary>
@@ -472,9 +611,9 @@ namespace Broadsides
         public static void DrawBoard(Field[][] board)
         {
             Random rnd = new Random();
-            Console.WriteLine("\n######## Board ########");
+            Console.WriteLine("######## Board ########");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("y\\x1 2 3 4 5 6 7 8 9¹0");
+            Console.WriteLine("y\\xA B C D E F G H I J");
             for (int i = 0; i < board.Length; i++)
             {
                 Console.ForegroundColor = ConsoleColor.White;
