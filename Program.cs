@@ -410,11 +410,11 @@ namespace Broadsides
         public static Coordinate InteractiveBoard(Field[][] board, bool friendly, string purpose, int horizontalMax = 1, int verticalMax = 1)
         {
             Coordinate output = new Coordinate(playerPreviousCoords);
-            if(output.X >= board[0].Length - horizontalMax)
+            if(output.X > board[0].Length - horizontalMax)
             {
                 output.X = board[0].Length - horizontalMax;
             }
-            if(output.Y >= board.Length - verticalMax)
+            if(output.Y > board.Length - verticalMax)
             {
                 output.Y = board.Length - verticalMax;
             }
