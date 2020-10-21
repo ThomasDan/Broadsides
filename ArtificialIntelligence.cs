@@ -27,13 +27,13 @@ namespace Broadsides
             get { return this.streak; }
             set { this.streak = value; }
         }
-
         public ArtificialIntelligence()
         {
             lastShipHitSunk = true;
             lastShipHitCoordinate = new Coordinate(rnd.Next(0,10), rnd.Next(0, 10));
             streak = 0;
         }
+
 
         public Random rnd = new Random();
 
@@ -139,8 +139,8 @@ namespace Broadsides
 
             if(nextShot.Y < 0 || nextShot.Y >= board.Length || nextShot.X < 0 || nextShot.X >= board[0].Length || board[nextShot.Y][nextShot.X].IsHit)
             {
-                // AI wants to shoot at a field that has already been hit. This is either due to not knowing of a ship or the AI spazzing out and trying to hit fields it has already hit.
-                // So this acts as not just the AI getting random coordinates, but also as a contingency in case the AI goes bonkers.
+                // AI wants to shoot at a field that has already been hit or is located outside of the board.
+                // THese are not acceptable solutions, therefore AI must forget about the current ship (If any) and return to taking random potshots until it hits a ship.
                 nextShot.X = rnd.Next(0, 10);
                 nextShot.Y = rnd.Next(0, 10);
                 this.streak = 0;

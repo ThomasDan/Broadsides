@@ -103,7 +103,7 @@ namespace Broadsides
                             break;
                     }
                 }
-                Console.Clear();
+                
                 
                 bool validPosition = false;
                 
@@ -120,12 +120,13 @@ namespace Broadsides
                     // It means 9 minus either ship length or 0, depending on if it's horizontal or not.
                     // This way, the ship cannot stick outside of the board. So a horizontal carrier (length 5) can at most be placed at horizontal(x) coordinate 5. So it will be placed on 5, 6, 7, 8, 9 (5 total squares)
 
-                    Coordinate coordinate = InteractiveBoard(playerBoard, true, "Pick a position for your " + ship.Type + ", it's " + ship.Length + " long. You are going to place it " + (horizontal ? "Horizontally." : "Vertically."), (horizontal ? ship.Length : 1), (!horizontal ? ship.Length : 1));
+                    Coordinate coordinate = ManualCoordinates(ship, horizontal);
+                    //InteractiveBoard(playerBoard, true, "Pick a position for your " + ship.Type + ", it's " + ship.Length + " long. You are going to place it " + (horizontal ? "Horizontally." : "Vertically."), (horizontal ? ship.Length : 1), (!horizontal ? ship.Length : 1));
 
 
                     // These positions have Room for these ships, but-!
                     // .. We need to check if any other ships are blocking it
-                    if(ShipInTheWay(playerBoard, ship, coordinate.X, coordinate.Y, horizontal))
+                    if (ShipInTheWay(playerBoard, ship, coordinate, horizontal))
                     {
                         Console.WriteLine("A ship is already placed there!");
                     }
@@ -147,8 +148,8 @@ namespace Broadsides
                         Console.WriteLine(ship.Type + " successfully placed at " + (coordinate.Y+1) + ", " + horizontalValueToLetter[coordinate.X]);
                     }
                 }
+                Console.Clear();
             }
-            Console.Clear();
 
             // Computer ship placements
             Random rnd = new Random();
@@ -164,23 +165,23 @@ namespace Broadsides
                     bool horizontal = rnd.Next(0, 2) == 1;
 
                     // If it is horizontal, than the x-value is adjusted to the length of the ship, thereby preventing the ship being placed out of bounds.
-                    int x = rnd.Next(0, 10 - (horizontal ? ship.Length : 0));
                     // If it is not hortizontal, then the y-value (Vertical coordinate) is adjusted to the length of the ship, -||-
-                    int y = rnd.Next(0, 10 - (!horizontal ? ship.Length : 0));
+                    
+                    Coordinate coordinate = new Coordinate(rnd.Next(0, 10 - (!horizontal ? ship.Length : 0)), rnd.Next(0, 10 - (horizontal ? ship.Length : 0)));
 
                     // If there is no ship already on this board, along the length of the ship we're about to place, at x and y coordinate, horizontally or not...
-                    if (!ShipInTheWay(computerBoard, ship, x, y, horizontal))
+                    if (!ShipInTheWay(computerBoard, ship, coordinate, horizontal))
                     {
                         // Then Place the ship on those Fields!
                         for (int i = 0; i < ship.Length; i++)
                         {
                             if (horizontal)
                             {
-                                computerBoard[y][x + i]._Ship = ship;
+                                computerBoard[coordinate.Y][coordinate.X + i]._Ship = ship;
                             }
                             else
                             {
-                                computerBoard[y + i][x]._Ship = ship;
+                                computerBoard[coordinate.Y + i][coordinate.X]._Ship = ship;
                             }
                         }
                         validPosition = true;
@@ -234,7 +235,9 @@ namespace Broadsides
                     {
                         Console.Clear();
 
-                        Coordinate coordinate = InteractiveBoard(computerBoard, false, "Choose where to shoot!");
+                        Console.WriteLine("Your turn to shoot!");
+                        DrawTacticalDisplay(computerBoard);
+                        Coordinate coordinate = ManualCoordinates();
 
                         Field field = computerBoard[coordinate.Y][coordinate.X];
                         if(!field.IsHit)
@@ -408,7 +411,7 @@ namespace Broadsides
         }
 
         /// <summary>
-        /// Interactive board. Allows you to use the arrow-keys to navigate the board, be it your own board to place ships and the enemy's board to shoot.
+        /// LEGACY due to eye hurt. Allows you to use the arrow-keys to navigate the board, be it your own board to place ships or the enemy's board to shoot.
         /// </summary>
         /// <param name="board">Your board or your enemy's board.</param>
         /// <param name="friendly">Your own board (true) or not (false).</param>
@@ -554,6 +557,40 @@ namespace Broadsides
         }
 
         /// <summary>
+        /// Allows user to manually input letters and numbers, corresponding to a coordinate position on the board.
+        /// </summary>
+        /// <param name="ship">Ship to be placed, if any.</param>
+        /// <param name="horizontal">Ship to be placed Horizontally or Vertically, if any ship.</param>
+        /// <returns>The coordinate of the final selection.</returns>
+        public static Coordinate ManualCoordinates(Ship ship = null, bool horizontal = true)
+        {
+            Coordinate coor = new Coordinate(0, 0);
+            int horizontalMax = 9 - (ship != null && horizontal ? ship.Length-1 : 0);
+            int verticalMax = 9 - (ship != null && !horizontal ? ship.Length-1 : 0);
+
+            Console.WriteLine("Please choose a horizontal letter from A to " + horizontalValueToLetter[horizontalMax]);
+            string letterInput = "";
+            bool validHorizontalCoord = false;
+            while (!validHorizontalCoord)
+            {
+                letterInput = Console.ReadKey().Key.ToString().ToUpper();
+
+                for (int i = 0; i <= horizontalMax; i++)
+                {
+                    if(letterInput == horizontalValueToLetter[i])
+                    {
+                        coor.X = i;
+                        validHorizontalCoord = true;
+                    }
+                }
+            }
+            Console.WriteLine("Please choose a vertical position");
+            coor.Y = AcquireValidIntegerWithin(0, verticalMax);
+
+            return coor;
+        }
+
+        /// <summary>
         /// Gets user to input an integer inclusively between minValue and maxValue.
         /// </summary>
         /// <param name="minValue">The Minimum value of Integer you want.</param>
@@ -607,12 +644,12 @@ namespace Broadsides
         /// <param name="y">Vertical Coordinate</param>
         /// <param name="horizontal">If the ship is to be placed horizontally, vertically if false</param>
         /// <returns>If it at any point encountered a ship in the fields of the new Ship.</returns>
-        public static bool ShipInTheWay(Field[][] board, Ship ship, int x, int y, bool horizontal)
+        public static bool ShipInTheWay(Field[][] board, Ship ship, Coordinate coord, bool horizontal)
         {
             for (int i = 0; i < ship.Length; i++)
             {
                 // If the board already has a Ship in any of the coordinates in the path of the new Ship, then return true that there is a Ship In The Way.
-                if (horizontal && board[y][x + i]._Ship != null || !horizontal && board[y + i][x]._Ship != null)
+                if (horizontal && board[coord.Y][coord.X + i]._Ship != null || !horizontal && board[coord.Y + i][coord.X]._Ship != null)
                 {
                     return true;
                 }

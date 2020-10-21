@@ -29,7 +29,7 @@ namespace Broadsides
 
         public Field()
         {
-            isHit = false;
+            this.isHit = false;
         }
     }
 }
