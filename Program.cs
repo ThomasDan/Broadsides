@@ -290,8 +290,7 @@ namespace Broadsides
                     Coordinate nextShot;
                     while (!validShot)
                     {
-                        
-                        nextShot = computer.NewGetNextShot(playerBoard);
+                        nextShot = computer.GetNextShot(playerBoard);
                         Field field = playerBoard[nextShot.Y][nextShot.X];
                         if(!field.IsHit)
                         {
@@ -303,12 +302,7 @@ namespace Broadsides
                             {
                                 Console.WriteLine("Computer has hit your " + field._Ship.Type + "!");
 
-                                if (computer.LastShipHitSunk)
-                                {
-                                    // It just found a new ship, it does not know the direction!
-                                    computer.Direction = new Coordinate(0, 0);
-                                }
-                                else
+                                if (!computer.LastShipHitSunk && computer.Direction.X == 0 && computer.Direction.Y == 0)
                                 {
                                     // The Computer is continueing on the ship it's trying to sink, and therefore knows the direction!
                                     computer.Direction = new Coordinate(nextShot.Y - computer.LastShipHitCoordinate.Y, nextShot.X - computer.LastShipHitCoordinate.X);
@@ -320,9 +314,7 @@ namespace Broadsides
                                 if (field._Ship.Sunk)
                                 {
                                     Console.WriteLine("Computer has sunk your " + field._Ship.Type + "!");
-                                    computer.Direction = new Coordinate(0, 0);
-                                    computer.Streak = 0;
-                                    computer.LastShipHitSunk = true;
+                                    computer.ResetTargetting();
                                 }
                             }
                             else
@@ -336,9 +328,9 @@ namespace Broadsides
                     }
                 }
             }
-            Console.WriteLine("This is your board:");
+            Console.WriteLine("This is yours:");
             DrawBoard(playerBoard);
-            Console.WriteLine("This is Computer's board:");
+            Console.WriteLine("This is Computer's:");
             DrawBoard(computerBoard);
             Console.ReadKey();
         }
@@ -584,7 +576,7 @@ namespace Broadsides
             int horizontalMax = 9 - (ship != null && horizontal ? ship.Length-1 : 0);
             int verticalMax = 9 - (ship != null && !horizontal ? ship.Length-1 : 0);
 
-            Console.WriteLine("Please choose a horizontal letter from A to " + horizontalValueToLetter[horizontalMax]);
+            Console.WriteLine("\nPlease choose a horizontal letter from A to " + horizontalValueToLetter[horizontalMax]);
             string letterInput = "";
             bool validHorizontalCoord = false;
             while (!validHorizontalCoord)
@@ -600,7 +592,7 @@ namespace Broadsides
                     }
                 }
             }
-            Console.WriteLine("Please choose a vertical position");
+            Console.WriteLine("\nPlease choose a vertical position");
             coor.Y = AcquireValidIntegerWithin(0, verticalMax);
 
             return coor;

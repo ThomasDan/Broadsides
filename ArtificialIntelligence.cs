@@ -12,7 +12,7 @@ namespace Broadsides
         private Coordinate direction; // Newest Shot which hit a ship - Oldest Shot which hit a ship
         /*
             DIRECTION:
-            NO: 00		 0,  0
+            NO: 00		 Y,  X
             UP: -Y 		-1,  0
             DW: +Y 		 1,  0
             RT: +X		 0,  1
@@ -53,21 +53,28 @@ namespace Broadsides
 
         public Random rnd = new Random();
 
-        public Coordinate NewGetNextShot(Field[][] board)
+        /// <summary>
+        /// Gets the next planned or random shot for the AI.
+        /// </summary>
+        /// <param name="board">Player's board.</param>
+        /// <returns>Coordinates for the next potential shot</returns>
+        public Coordinate GetNextShot(Field[][] board)
         {
             /* Modus Operandi of the AI:
-
+           
             1. Randomly hit ship.
-                -lastShipHit Set, LastShipSunk False
-
+                -lastShipHit Set, LastShipSunk False, streak++
+                -Go through next steps until ship is Sunk or lost.
+           
             2. Shoot adjacent squares to find Direction of ship.
-                -
-
-            3. Follow Direction until ship sinks OR hit Hit Field (Ship or no Ship) OR Point outside Board.
-
-            4. (In case of water) Use STREAK and Direction to turn back around to get other half of ship.
+                -When next part found: lastShipHit set, Direction set, streak++
+           
+            3. Shoot in the Direction until ship sinks OR...
+                -lastShipHit set, streak++
+        
+            4. ..AI wants to shoot a Hit Field OR it points outside the Board. Time to turn back around to get the other half of ship.
+                -lastShipHit set, Direction Inverted, 
             */
-
 
             Coordinate nextShot = new Coordinate(this.lastShipHitCoordinate.Y, this.lastShipHitCoordinate.X);
 
@@ -98,7 +105,6 @@ namespace Broadsides
                 else
                 {
                     // The AI Knows the Direction of the Ship!
-                    Console.WriteLine("I KNOW THE DIRECTION!! " + this.direction.Y + ", " + this.direction.X); // test
                     if (
                         // If the Direction points inside the board or not
                         nextShot.Y + this.direction.Y >= 0 && nextShot.Y + this.direction.Y < board[0].Length &&
@@ -114,22 +120,25 @@ namespace Broadsides
                     }
                     else
                     {
-                        // Reversing Direction
+                        // The Direction points Outside the board or to a Field which has already been Hit, so it is time for a Reversal using Direction and STREAK!
+
+                        // Reversing Direction first
                         this.direction.Y = this.direction.Y * -1;
                         this.direction.X = this.direction.X * -1;
-                        // The Direction points Outside the board or to a Field which has already been Hit, time for a Reversal using Direction and STREAK!
+                        
+                        // Applying Streak multiplied with Direction, which lands the shot right on the other half of the ship.
                         nextShot.Y += this.direction.Y * this.streak;
                         nextShot.X += this.direction.X * this.streak;
                     }
                 }
             }
-
+            // One last Contingency Check, just in case that the AI wants to shoot at a Field which has already been Hit or does not exist (Outside the board).
             nextShot = NextShotContingency(nextShot, board);
             return nextShot;
         }
 
         /// <summary>
-        /// Contingency Check and Apply if the Next Shot is a sensible one.
+        /// Contingency Check and Apply if the Next Shot is not a sensible one, or it does not know what to shoot at.
         /// </summary>
         /// <param name="nextShot">AI's suggested next shot.</param>
         /// <param name="board">Player's Board, which the AI is about to shoot at.</param>
@@ -142,116 +151,19 @@ namespace Broadsides
                 // THese are not acceptable solutions, therefore AI must forget about the current ship (If any) and return to taking random potshots until it hits a ship.
                 nextShot.X = rnd.Next(0, 10);
                 nextShot.Y = rnd.Next(0, 10);
-                this.streak = 0;
-                this.direction = new Coordinate(0, 0);
-                this.lastShipHitSunk = true;
+                this.ResetTargetting();
             }
             return nextShot;
         }
 
         /// <summary>
-        /// Get the next coordinates that the AI wants to shoot at.
+        /// Resets the AI's targetting, making it forget about any sunk ships or ships it failed to sink.
         /// </summary>
-        /// <param name="board">Opposing player's board.</param>
-        /// <returns>Coordinates Computer wants to shoot at.</returns>
-        public Coordinate GetNextShot(Field[][] board)
+        public void ResetTargetting()
         {
-            Coordinate nextShot = new Coordinate(this.lastShipHitCoordinate.Y, this.lastShipHitCoordinate.X);
-            if (!this.lastShipHitSunk)
-            {
-                // Smart AI finishes the ship by shooting at adjacent squares!
-
-                // Computer checks if it can find a likely direction for the ship (By having hit two adjacent squares, based on the lastShipHitCoordinate)
-                // FOr example, if it hit the ship last turn, and there's a ship left of that, the next part of the ship might be on the right.
-                if(
-                    this.lastShipHitCoordinate.X + 1 < board[0].Length && 
-                    board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit && 
-                    board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1]._Ship != null &&
-                    this.streak > 1)
-                {
-                    // However! If the next space in the end of a direction has already been hit, it's time to turn around instead, using streak to return to the other end of the ship.
-                    if(this.lastShipHitCoordinate.X - 1 >= 0 && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit)
-                    {
-                        nextShot.X--;
-                    }
-                    else if (this.lastShipHitCoordinate.X + this.streak < board[0].Length)
-                    {
-                        nextShot.X += this.streak;
-                        this.streak = 0;
-                    }
-                }
-                else if(
-                    this.lastShipHitCoordinate.X - 1 >= 0 && 
-                    board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit && 
-                    board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1]._Ship != null &&
-                    this.streak > 1)
-                {
-                    if (this.lastShipHitCoordinate.X + 1 < board[0].Length && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit)
-                    {
-                        nextShot.X++;
-                    }
-                    else if (this.lastShipHitCoordinate.X - this.streak >= 0)
-                    {
-                        nextShot.X -= this.streak;
-                        this.streak = 0;
-                    }
-                }
-                else if(
-                    this.lastShipHitCoordinate.Y - 1 >= 0 &&
-                    board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X].IsHit && 
-                    board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X]._Ship != null &&
-                    this.streak > 1)
-                {
-                    if (this.lastShipHitCoordinate.Y + 1 < board.Length && !board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X].IsHit)
-                    {
-                        nextShot.Y++;
-                    }
-                    else if (this.lastShipHitCoordinate.Y - this.streak >= 0)
-                    {
-                        nextShot.Y -= this.streak;
-                        this.streak = 0;
-                    }
-                }
-                else if(
-                    this.lastShipHitCoordinate.Y + 1 < board.Length && 
-                    board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X].IsHit && 
-                    board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X]._Ship != null &&
-                    this.streak > 1)
-                {
-                    if (this.lastShipHitCoordinate.Y - 1 >= 0 && !board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X].IsHit)
-                    {
-                        nextShot.Y--;
-                    }
-                    else if(this.lastShipHitCoordinate.Y + this.streak < board.Length)
-                    {
-                        nextShot.Y += this.streak;
-                        this.streak = 0;
-                    }
-                }
-                else
-                {
-                    // Since no hit adjacent ships, it will shoot a field, clock-wise rotation, unhit square adjacent
-                    if(this.lastShipHitCoordinate.Y - 1 >= 0 && !board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X].IsHit)
-                    {
-                        nextShot.Y--;
-                    }
-                    else if(this.lastShipHitCoordinate.X + 1 < board[0].Length && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit)
-                    {
-                        nextShot.X++;
-                    }
-                    else if(this.lastShipHitCoordinate.Y + 1 < board.Length && !board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X].IsHit)
-                    {
-                        nextShot.Y++;
-                    }
-                    else if(this.lastShipHitCoordinate.X - 1 >= 0 && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit)
-                    {
-                        nextShot.X--;
-                    }
-                }
-            }
-
-            nextShot = NextShotContingency(nextShot, board);
-            return nextShot;
+            this.streak = 0;
+            this.direction = new Coordinate(0, 0);
+            this.lastShipHitSunk = true;
         }
     }
 }
