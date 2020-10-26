@@ -167,7 +167,10 @@ namespace Broadsides
                     // If it is horizontal, than the x-value is adjusted to the length of the ship, thereby preventing the ship being placed out of bounds.
                     // If it is not hortizontal, then the y-value (Vertical coordinate) is adjusted to the length of the ship, -||-
                     
-                    Coordinate coordinate = new Coordinate(rnd.Next(0, 10 - (!horizontal ? ship.Length : 0)), rnd.Next(0, 10 - (horizontal ? ship.Length : 0)));
+                    Coordinate coordinate = new Coordinate(
+                        rnd.Next(0, 10 - (!horizontal ? ship.Length : 0)),
+                        rnd.Next(0, 10 - (horizontal ? ship.Length : 0))
+                        );
 
                     // If there is no ship already on this board, along the length of the ship we're about to place, at x and y coordinate, horizontally or not...
                     if (!ShipInTheWay(computerBoard, ship, coordinate, horizontal))
@@ -288,23 +291,36 @@ namespace Broadsides
                     while (!validShot)
                     {
                         
-                        nextShot = computer.GetNextShot(playerBoard);
+                        nextShot = computer.NewGetNextShot(playerBoard);
                         Field field = playerBoard[nextShot.Y][nextShot.X];
                         if(!field.IsHit)
                         {
-                            Console.WriteLine("Computer: I SHOOT AT " + (nextShot.Y+1) + ", " + horizontalValueToLetter[nextShot.X]);
+                            Console.WriteLine("Computer: I SHOOT AT " + horizontalValueToLetter[nextShot.X] + ", " + (nextShot.Y + 1));
 
                             validShot = true;
                             field.IsHit = true;
                             if(field._Ship != null)
                             {
                                 Console.WriteLine("Computer has hit your " + field._Ship.Type + "!");
+
+                                if (computer.LastShipHitSunk)
+                                {
+                                    // It just found a new ship, it does not know the direction!
+                                    computer.Direction = new Coordinate(0, 0);
+                                }
+                                else
+                                {
+                                    // The Computer is continueing on the ship it's trying to sink, and therefore knows the direction!
+                                    computer.Direction = new Coordinate(nextShot.Y - computer.LastShipHitCoordinate.Y, nextShot.X - computer.LastShipHitCoordinate.X);
+                                }
+
                                 computer.LastShipHitSunk = false;
                                 computer.LastShipHitCoordinate = nextShot;
                                 computer.Streak++;
                                 if (field._Ship.Sunk)
                                 {
                                     Console.WriteLine("Computer has sunk your " + field._Ship.Type + "!");
+                                    computer.Direction = new Coordinate(0, 0);
                                     computer.Streak = 0;
                                     computer.LastShipHitSunk = true;
                                 }
@@ -698,6 +714,20 @@ namespace Broadsides
                             Console.BackgroundColor = ConsoleColor.DarkBlue;
                             Console.ForegroundColor = ConsoleColor.DarkYellow;
                             Console.Write(field._Ship.Type.Substring(0, 1) + field._Ship.Type.Substring(0, 1));
+                        }
+                    }
+                    else if (field.IsHit)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        switch (rnd.Next(0, 3))
+                        {
+                            case 0:
+                                
+                                Console.Write("▒▒");
+                                break;
+                            default:
+                                Console.Write("▓▓");
+                                break;
                         }
                     }
                     else

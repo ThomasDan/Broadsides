@@ -8,8 +8,8 @@ namespace Broadsides
 {
     class Coordinate
     {
-        private int x;
-        private int y;
+        private int x; // Horizontal / Row value
+        private int y; // Vertical / Column value
 
         public int X
         {
