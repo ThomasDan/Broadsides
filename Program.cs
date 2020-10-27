@@ -267,7 +267,11 @@ namespace Broadsides
                         }
                         else
                         {
+                            Console.BackgroundColor = ConsoleColor.DarkRed;
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
                             Console.WriteLine("You have already fired at that position! It is against orders to waste ammunition!");
+                            Console.ResetColor();
+                            Console.ReadKey();
                         }
                     }
                 }
@@ -333,6 +337,11 @@ namespace Broadsides
             Console.WriteLine("This is Computer's:");
             DrawBoard(computerBoard);
             Console.ReadKey();
+        }
+
+        public static void PlayersTurn()
+        {
+
         }
 
         /// <summary>

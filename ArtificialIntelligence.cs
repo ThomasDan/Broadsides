@@ -84,22 +84,36 @@ namespace Broadsides
                 if (this.direction.Y == 0 && this.direction.X == 0)
                 {
                     // The AI does Not know the Direction of the Ship, therefore..
-                    // ..It will shoot the adjacent fields in a clock-wise rotation until it finds another part of a ship.
-                    if (this.lastShipHitCoordinate.Y - 1 >= 0 && !board[this.lastShipHitCoordinate.Y - 1][this.lastShipHitCoordinate.X].IsHit)
+                    // ..It will shoot at a random adjacent field, if it has not already been hit.
+
+                    // List of Potential Directions: Down, Up, Right, Left
+                    List<Coordinate> potenDirects = new List<Coordinate>
                     {
-                        nextShot.Y--;
-                    }
-                    else if (this.lastShipHitCoordinate.X + 1 < board[0].Length && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X + 1].IsHit)
+                        new Coordinate(1,0), new Coordinate(-1,0), new Coordinate(0,1), new Coordinate(0,-1)
+                    };
+                    bool goodPotDirect = false;
+                    int index;
+                    while (!goodPotDirect)
                     {
-                        nextShot.X++;
-                    }
-                    else if (this.lastShipHitCoordinate.Y + 1 < board.Length && !board[this.lastShipHitCoordinate.Y + 1][this.lastShipHitCoordinate.X].IsHit)
-                    {
-                        nextShot.Y++;
-                    }
-                    else if (this.lastShipHitCoordinate.X - 1 >= 0 && !board[this.lastShipHitCoordinate.Y][this.lastShipHitCoordinate.X - 1].IsHit)
-                    {
-                        nextShot.X--;
+                        index = rnd.Next(0, potenDirects.Count);
+                        if(
+                            // If the Potentail Direction points to a field Outside the Board...
+                            this.lastShipHitCoordinate.Y + potenDirects[index].Y < 0 || this.lastShipHitCoordinate.Y + potenDirects[index].Y >= board.Length ||
+                            this.lastShipHitCoordinate.X + potenDirects[index].X < 0 || this.lastShipHitCoordinate.X + potenDirects[index].X >= board.Length ||
+                            // ..or to a Field which has already been hit..
+                            board[this.lastShipHitCoordinate.Y + potenDirects[index].Y][this.lastShipHitCoordinate.X + potenDirects[index].X].IsHit
+                            )
+                        {
+                            // Remove the potential direction from Potential Directions, for it has no potential!
+                            potenDirects.RemoveAt(index);
+                        }
+                        else
+                        {
+                            // This Potential Direction is a Good Potential Direction, and will be shot at!
+                            goodPotDirect = true;
+                            nextShot.Y += potenDirects[index].Y;
+                            nextShot.X += potenDirects[index].X;
+                        }
                     }
                 }
                 else
