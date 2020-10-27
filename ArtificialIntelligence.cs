@@ -93,7 +93,7 @@ namespace Broadsides
                     };
                     bool goodPotDirect = false;
                     int index;
-                    while (!goodPotDirect)
+                    while (!goodPotDirect && potenDirects.Count > 0)
                     {
                         index = rnd.Next(0, potenDirects.Count);
                         if(
