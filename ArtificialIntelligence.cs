@@ -111,8 +111,7 @@ namespace Broadsides
                         {
                             // This Potential Direction is a Good Potential Direction, and will be shot at!
                             goodPotDirect = true;
-                            nextShot.Y += potenDirects[index].Y;
-                            nextShot.X += potenDirects[index].X;
+                            nextShot = nextShot.Add(potenDirects[index]);
                         }
                     }
                 }
@@ -129,20 +128,17 @@ namespace Broadsides
                     {
                         // The Direction points to a Field inside the Board which has not been hit
                         // The field has not been shot, and is inside the board, and should therefore be shot!
-                        nextShot.Y += this.direction.Y;
-                        nextShot.X += this.direction.X;
+                        nextShot = nextShot.Add(this.direction);
                     }
                     else
                     {
                         // The Direction points Outside the board or to a Field which has already been Hit, so it is time for a Reversal using Direction and STREAK!
-
                         // Reversing Direction first
                         this.direction.Y = this.direction.Y * -1;
                         this.direction.X = this.direction.X * -1;
-                        
+
                         // Applying Streak multiplied with Direction, which lands the shot right on the other half of the ship.
-                        nextShot.Y += this.direction.Y * this.streak;
-                        nextShot.X += this.direction.X * this.streak;
+                        nextShot = nextShot.Add(new Coordinate(this.direction.Y * this.streak, this.direction.X * this.streak));
                     }
                 }
             }

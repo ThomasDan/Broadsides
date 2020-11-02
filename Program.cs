@@ -121,7 +121,6 @@ namespace Broadsides
                     // This way, the ship cannot stick outside of the board. So a horizontal carrier (length 5) can at most be placed at horizontal(x) coordinate 5. So it will be placed on 5, 6, 7, 8, 9 (5 total squares)
 
                     Coordinate coordinate = ManualCoordinates(ship, horizontal);
-                    //InteractiveBoard(playerBoard, true, "Pick a position for your " + ship.Type + ", it's " + ship.Length + " long. You are going to place it " + (horizontal ? "Horizontally." : "Vertically."), (horizontal ? ship.Length : 1), (!horizontal ? ship.Length : 1));
 
 
                     // These positions have Room for these ships, but-!
@@ -339,11 +338,6 @@ namespace Broadsides
             Console.ReadKey();
         }
 
-        public static void PlayersTurn()
-        {
-
-        }
-
         /// <summary>
         /// Checks if all ships in the list have been sunk.
         /// </summary>
@@ -425,152 +419,6 @@ namespace Broadsides
             }
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.White;
-        }
-
-        /// <summary>
-        /// LEGACY due to eye hurt. Allows you to use the arrow-keys to navigate the board, be it your own board to place ships or the enemy's board to shoot.
-        /// </summary>
-        /// <param name="board">Your board or your enemy's board.</param>
-        /// <param name="friendly">Your own board (true) or not (false).</param>
-        /// <param name="purpose">What the player is supposed to do. For Example: "Choose where to shoot!"</param>
-        /// <param name="horizontalMax">Optional Value. This is here in case you are placing down ships Horizontally, in which case you should input ship.Length.</param>
-        /// <param name="verticalMax">Optional Value. This is here in case you are placing down ships Vertically, -||-</param>
-        /// <returns>The coordinate of the final selection.</returns>
-        public static Coordinate InteractiveBoard(Field[][] board, bool friendly, string purpose, int horizontalMax = 1, int verticalMax = 1)
-        {
-            Coordinate output = new Coordinate(playerPreviousCoords);
-            if(output.X > board[0].Length - horizontalMax)
-            {
-                output.X = board[0].Length - horizontalMax;
-            }
-            if(output.Y > board.Length - verticalMax)
-            {
-                output.Y = board.Length - verticalMax;
-            }
-            bool done = false;
-
-            while (!done)
-            {
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("y\\xA B C D E F G H I J");
-
-                for (int i = 0; i < board.Length; i++)
-                {
-                    Console.BackgroundColor = ConsoleColor.Black;
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write((i == 9 ? "" : " ") + (i + 1));
-
-
-                    for (int j = 0; j < board[i].Length; j++)
-                    {
-                        Field field = board[i][j];
-                        Console.ForegroundColor = ConsoleColor.White;
-                        if ((i + j) % 2 == 0)
-                        {
-                            Console.BackgroundColor = ConsoleColor.DarkGreen;
-                        }
-                        else
-                        {
-                            Console.BackgroundColor = ConsoleColor.Green;
-                        }
-
-                        if (i == output.Y && j == output.X)
-                        {
-                            Console.BackgroundColor = ConsoleColor.DarkYellow;
-                            Console.Write("##");
-                        }
-                        else if (friendly)
-                        {
-                            if(field._Ship != null)
-                            {
-                                Console.BackgroundColor = ConsoleColor.DarkBlue;
-                                Console.ForegroundColor = ConsoleColor.White;
-                                Console.Write(field._Ship.Type.Substring(0, 1) + field._Ship.Type.Substring(0, 1));
-                            }
-                            else
-                            {
-                                Console.Write("  ");
-                            }
-                        }
-                        else
-                        {
-                            if (field.IsHit)
-                            {
-                                if (field._Ship == null)
-                                {
-                                    // IF there is no ship, draw mundane hit.
-                                    Console.ForegroundColor = ConsoleColor.Black;
-                                    Console.Write("()");
-                                }
-                                else
-                                {
-                                    // If there is a hit ship, draw a Success hit.
-                                    Console.BackgroundColor = ConsoleColor.DarkRed;
-                                    Console.ForegroundColor = ConsoleColor.Black;
-                                    Console.Write("{}");
-                                }
-                            }
-                            else
-                            {
-                                // Unhit square. Might contain a ship. Might not.
-                                Console.Write("  ");
-                            }
-                        }
-                    }
-                    Console.WriteLine();
-                }
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.White;
-
-                Console.WriteLine(purpose);
-
-                Console.WriteLine("Use the arrow-keys to move around! Press SpaceBar to Select!");
-                bool correctKey = false;
-                while (!correctKey)
-                {
-                    ConsoleKey key = Console.ReadKey().Key;
-                    switch (key)
-                    {
-                        case ConsoleKey.UpArrow:
-                            if(output.Y - 1 >= 0)
-                            {
-                                correctKey = true;
-                                output.Y--;
-                            }
-                            break;
-                        case ConsoleKey.DownArrow:
-                            if(output.Y + 1 <= board.Length - verticalMax)
-                            {
-                                correctKey = true;
-                                output.Y++;
-                            }
-                            break;
-                        case ConsoleKey.RightArrow:
-                            if (output.X + 1 <= board[0].Length - horizontalMax)
-                            {
-                                correctKey = true;
-                                output.X++;
-                            }
-                            break;
-                        case ConsoleKey.LeftArrow:
-                            if (output.X - 1 >= 0)
-                            {
-                                correctKey = true;
-                                output.X--;
-                            }
-                            break;
-                        case ConsoleKey.Spacebar:
-                            correctKey = true;
-                            done = true;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                Console.Clear();
-            }
-            playerPreviousCoords = output;
-            return output;
         }
 
         /// <summary>

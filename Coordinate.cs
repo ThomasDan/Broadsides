@@ -23,13 +23,18 @@ namespace Broadsides
         }
         public Coordinate(int Y, int X)
         {
-            x = X;
-            y = Y;
+            this.x = X;
+            this.y = Y;
         }
         public Coordinate(Coordinate coordinate)
         {
-            x = coordinate.X;
-            y = coordinate.Y;
+            this.x = coordinate.X;
+            this.y = coordinate.Y;
+        }
+
+        public Coordinate Add(Coordinate direction)
+        {
+            return new Coordinate(this.y + direction.y, this.x + direction.x);
         }
     }
 }
